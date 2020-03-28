@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>http://73jcxc.coding-pages.com</id>
-    <title>Gridea</title>
-    <updated>2020-03-28T16:30:10.720Z</updated>
+    <title>lnn1988</title>
+    <updated>2020-03-28T16:47:56.106Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="http://73jcxc.coding-pages.com"/>
     <link rel="self" href="http://73jcxc.coding-pages.com/atom.xml"/>
-    <subtitle>温故而知新</subtitle>
+    <subtitle>keep healthy</subtitle>
     <logo>http://73jcxc.coding-pages.com/images/avatar.png</logo>
     <icon>http://73jcxc.coding-pages.com/favicon.ico</icon>
-    <rights>All rights reserved 2020, Gridea</rights>
+    <rights>All rights reserved 2020, lnn1988</rights>
 </feed>
