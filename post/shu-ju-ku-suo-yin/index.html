@@ -1,0 +1,230 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>数据库索引 | lnn1988</title>
+<link rel="shortcut icon" href="http://73jcxc.coding-pages.com/favicon.ico?v=1585490946884">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://73jcxc.coding-pages.com/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="数据库索引 | lnn1988 - Atom Feed" href="http://73jcxc.coding-pages.com/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="数据库索引
+数据库索引数据结构
+MongoDB：B 树
+InnoDB：B+树
+MyISAM：HASH
+B树 VS B+树
+B 树所有节点都用来用来存数据。
+
+B+ 树只有叶子节点有数据，同时将所有的叶子节点串起来。
+
+为什么 MongoDB..." />
+    <meta name="keywords" content="数据库" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://73jcxc.coding-pages.com">
+  <img class="avatar" src="http://73jcxc.coding-pages.com/images/avatar.png?v=1585490946884" alt="">
+  </a>
+  <h1 class="site-title">
+    lnn1988
+  </h1>
+  <p class="site-description">
+    keep healthy 12
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              数据库索引
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-03-29
+              </span>
+              <span>
+                2 min read
+              </span>
+              
+                <a href="http://73jcxc.coding-pages.com/tag/database/" class="post-tag">
+                  # 数据库
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h1 id="数据库索引">数据库索引</h1>
+<h2 id="数据库索引数据结构">数据库索引数据结构</h2>
+<p>MongoDB：B 树<br>
+InnoDB：B+树<br>
+MyISAM：HASH</p>
+<h2 id="b树-vs-b树">B树 VS B+树</h2>
+<p>B 树所有节点都用来用来存数据。<br>
+<img src="https://gitee.com/lnn1988/upic1988/raw/master/uPic/eTzXKX.jpg" alt="eTzXKX" loading="lazy"></p>
+<p>B+ 树只有叶子节点有数据，同时将所有的叶子节点串起来。<br>
+<img src="https://gitee.com/lnn1988/upic1988/raw/master/uPic/aw8DQu.jpg" alt="aw8DQu" loading="lazy"></p>
+<h2 id="为什么-mongodb-和-innodb-不一样">为什么 MongoDB 和 InnoDB 不一样</h2>
+<p>B+树由于将所有的叶子节点串联了起来，可以很方便的进行范围遍历，因此可以进行很方便的range；<br>
+MongoDB 选择 B 树是因为对于非关系型数据库，每个文档是一条记录，不需要范围取值，因此采用 B 树；</p>
+<h2 id="mysql-的索引聚集索引和辅助索引">MySQL 的索引（聚集索引和辅助索引）</h2>
+<p>如果一个主键被定义了，那么这个主键就是作为聚集索引<br>
+如果没有主键被定义，那么该表的第一个唯一非空索引被作为聚集索引<br>
+如果没有主键也没有合适的唯一索引，那么innodb内部会生成一个隐藏的主键作为聚集索引<br>
+<strong>聚集索引的数据结构是一个 b+树，存放了索引值以及真实的数据；</strong></p>
+<p>辅助索引存了聚集索引，因此，使用辅助索引查到的只是聚集索引的值，获取真实的数据，需要使用查到的聚集索引值再去聚集索引的 B+树下查找。</p>
+<h2 id="mysql-索引失效情况">mysql 索引失效情况</h2>
+<ol>
+<li>在索引列使用函数</li>
+<li>使用 &lt;&gt; 或者 != 条件</li>
+<li>Like 并且开始是通配符，如<code>where name like &quot;%a%&quot;</code></li>
+</ol>
+<h2 id="数据库建表三范式">数据库建表三范式</h2>
+<ul>
+<li>第一范式（1NF）（无重复序列）</li>
+<li>第二范式（2NF）属性完全依赖于主键[消除部分子函数依赖]</li>
+<li>第三范式（3NF）属性不依赖于其它非主属性[消除传递依赖]</li>
+</ul>
+<ol>
+<li>第一范式目标（1NF）：确保每列的原子性。</li>
+<li>第二范式目标（2NF）：确保表中的每列，都和主键有关。</li>
+<li>第三范式目标（3NF）：确保每列都和主键列直接相关，而不是间接相关。</li>
+</ol>
+<h2 id="sql执行过程">sql执行过程</h2>
+<ol>
+<li>建立连接</li>
+<li>查询缓存</li>
+<li>解析 sql</li>
+<li>查询优化</li>
+<li>执行计划</li>
+<li>执行 sql</li>
+</ol>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B4%A2%E5%BC%95">数据库索引</a>
+<ul>
+<li><a href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B4%A2%E5%BC%95%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84">数据库索引数据结构</a></li>
+<li><a href="#b%E6%A0%91-vs-b%E6%A0%91">B树 VS B+树</a></li>
+<li><a href="#%E4%B8%BA%E4%BB%80%E4%B9%88-mongodb-%E5%92%8C-innodb-%E4%B8%8D%E4%B8%80%E6%A0%B7">为什么 MongoDB 和 InnoDB 不一样</a></li>
+<li><a href="#mysql-%E7%9A%84%E7%B4%A2%E5%BC%95%E8%81%9A%E9%9B%86%E7%B4%A2%E5%BC%95%E5%92%8C%E8%BE%85%E5%8A%A9%E7%B4%A2%E5%BC%95">MySQL 的索引（聚集索引和辅助索引）</a></li>
+<li><a href="#mysql-%E7%B4%A2%E5%BC%95%E5%A4%B1%E6%95%88%E6%83%85%E5%86%B5">mysql 索引失效情况</a></li>
+<li><a href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E5%BB%BA%E8%A1%A8%E4%B8%89%E8%8C%83%E5%BC%8F">数据库建表三范式</a></li>
+<li><a href="#sql%E6%89%A7%E8%A1%8C%E8%BF%87%E7%A8%8B">sql执行过程</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://73jcxc.coding-pages.com/post/shu-ju-ku-suo-ji-zhi/">
+              <h3 class="post-title">
+                数据库锁机制
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://73jcxc.coding-pages.com/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>
