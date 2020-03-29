@@ -1,0 +1,277 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>storm | lnn1988</title>
+<link rel="shortcut icon" href="https://lnn1988.github.io/favicon.ico?v=1585496743880">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://lnn1988.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="storm | lnn1988 - Atom Feed" href="https://lnn1988.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="流计算
+流数据特点
+
+持续快速到达，大小可能是无穷无尽的
+来源多，格式复杂
+数据量大，但是不关注存储
+注重整体价值，不过分关注个别数据
+顺序可能是不正确的
+
+流计算概念
+
+高性能
+海量式
+实时性
+分布式
+易用、可靠
+
+Storm
+Storm..." />
+    <meta name="keywords" content="大数据" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://lnn1988.github.io">
+  <img class="avatar" src="https://lnn1988.github.io/images/avatar.png?v=1585496743880" alt="">
+  </a>
+  <h1 class="site-title">
+    lnn1988
+  </h1>
+  <p class="site-description">
+    keep healthy 12
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              storm
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-03-29
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+                <a href="https://lnn1988.github.io/tag/big_data/" class="post-tag">
+                  # 大数据
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h1 id="流计算">流计算</h1>
+<h3 id="流数据特点">流数据特点</h3>
+<ul>
+<li>持续快速到达，大小可能是无穷无尽的</li>
+<li>来源多，格式复杂</li>
+<li>数据量大，但是不关注存储</li>
+<li>注重整体价值，不过分关注个别数据</li>
+<li>顺序可能是不正确的</li>
+</ul>
+<h3 id="流计算概念">流计算概念</h3>
+<ul>
+<li>高性能</li>
+<li>海量式</li>
+<li>实时性</li>
+<li>分布式</li>
+<li>易用、可靠</li>
+</ul>
+<h2 id="storm">Storm</h2>
+<p>Storm 可以方便地与数据库系统进行整合，从而开发出强大的实时计算系统。</p>
+<p>主要术语有：</p>
+<ul>
+<li>Streams：流数据</li>
+<li>Tuple：Storm 将 Streams 描述为一个无界的 Tuple 序列，每个 Tuple 是一堆值的列表</li>
+<li>Spouts：每个 Stream 的源头抽象为一个 Spout，Spout 会从外部读取数据，封装成一个 Tuple 发送到 Stream，包括一个 nextTuple 函数，不停调用该函数，产生数据流</li>
+<li>Bolts：Bolt 是 Streams 的转换过程，既可以处理 Tuple，也可以将处理后的 Tuple 作为新的 Stream 发送给下一个 Bolt。Bolt 可以执行过滤、函数、join 等操作，接口有一个 execute 方法，收到消息会调用此函数。</li>
+<li>Topology：Storm 将 Spout、Bolt 组成的网络抽象为Topology（拓扑），里面的每个组件都是并行执行的。</li>
+<li>Groupings：用于告知 Topology 如何在两个组件中进行 Tuple 的传送</li>
+</ul>
+<h3 id="streams-grouping">Streams Grouping</h3>
+<ul>
+<li>Shuffle Grouping：随机分组随机分发 Stream 中的 Tuple，保证每个 Bolt 的 Task 收到的 Tuple 数量大概一致</li>
+<li>FieldsGrouping：按照字段分组，保证相同字段的 Tuple 分配到一个 Task</li>
+<li>AllGrouping：广播发送，每个 Task 都会收到所有的 Tuple</li>
+<li>GlobalGrouping：全局分组，所有 Tuple 会发送到同一个 Task</li>
+<li>NonGrouping：不分组，类似于 ShuffleGrouping，当前 Task 的执行会和他的被订阅者在同一个线程中执行</li>
+<li>DirectGrouping：直接分组，直接指定由某个 Task 来执行 Tuple 的处理</li>
+</ul>
+<h3 id="storm-框架设计">Storm 框架设计</h3>
+<p>Storm 运行 Topoplgy，类似于 Hadoop 的 MapReduce。但是两者的任务不同，Hadoop 的 MR 作业会完成计算并结束运行，而 Topology 持续处理消息知道人为终止。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"></th>
+<th style="text-align:center"><strong>Hadoop</strong></th>
+<th style="text-align:center"><strong>Storm</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">应用名称</td>
+<td style="text-align:center">Job</td>
+<td style="text-align:center">Topology</td>
+</tr>
+<tr>
+<td style="text-align:center">系统角色</td>
+<td style="text-align:center">JobTracker</td>
+<td style="text-align:center">Nimbus</td>
+</tr>
+<tr>
+<td style="text-align:center"></td>
+<td style="text-align:center">TaskTracker</td>
+<td style="text-align:center">Supervisor</td>
+</tr>
+<tr>
+<td style="text-align:center">组件接口</td>
+<td style="text-align:center">Map/Reduce</td>
+<td style="text-align:center">Spout/Bolt</td>
+</tr>
+</tbody>
+</table>
+<p>节点：</p>
+<ul>
+<li>Master：运行名为 Nimbus 的后台程序，负责在集群内分发代码，为 worker 分配任务。</li>
+<li>Worker：运行 Supervisor 的后台程序，监听分配给他的工作，一个 Worker 节点同时运行多个 Worker 进程。</li>
+<li>Zookeeper：Storm 使用 ZK 做协调，负责 Nimbus 和 Supervisor 的协调工作。</li>
+</ul>
+<figure data-type="image" tabindex="1"><img src="https://tva1.sinaimg.cn/large/006y8mN6ly1g8xlktkl6sj30bv09674s.jpg" alt="截屏2019-11-14下午3.18.09" loading="lazy"></figure>
+<ol>
+<li>每台 Supervisor 上运行多个 worker，每个 worker 对 Topology 中的每个组件运行一个或者多个 executor</li>
+<li>每个 executor 是产生于 worker 内部的线程，执行同一个组件的多个 Task</li>
+<li>实际的数据处理有 Task 来完成</li>
+</ol>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E6%B5%81%E8%AE%A1%E7%AE%97">流计算</a><br>
+*
+<ul>
+<li><a href="#%E6%B5%81%E6%95%B0%E6%8D%AE%E7%89%B9%E7%82%B9">流数据特点</a></li>
+<li><a href="#%E6%B5%81%E8%AE%A1%E7%AE%97%E6%A6%82%E5%BF%B5">流计算概念</a></li>
+<li><a href="#storm">Storm</a>
+<ul>
+<li><a href="#streams-grouping">Streams Grouping</a></li>
+<li><a href="#storm-%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1">Storm 框架设计</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://lnn1988.github.io/post/redis-wen-ti-hui-zong/">
+              <h3 class="post-title">
+                redis 问题汇总
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://lnn1988.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>
