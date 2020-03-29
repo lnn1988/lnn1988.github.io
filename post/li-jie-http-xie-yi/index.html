@@ -1,0 +1,349 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>理解 HTTP 协议 | lnn1988</title>
+<link rel="shortcut icon" href="http://0emlw3.coding-pages.com/favicon.ico?v=1585491649939">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://0emlw3.coding-pages.com/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="理解 HTTP 协议 | lnn1988 - Atom Feed" href="http://0emlw3.coding-pages.com/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="理解 HTTP 协议
+输入 URL 到显示页面的过程
+
+DNS 解析：根据域名查 IP
+
+递归查询
+
+
+TCP 链接（3 次握手）
+HTTP 请求
+服务器处理请求：接收到TCP报文开始，它会对TCP连接进行处理，对HTTP协议进行解析，并按..." />
+    <meta name="keywords" content="编程" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://0emlw3.coding-pages.com">
+  <img class="avatar" src="http://0emlw3.coding-pages.com/images/avatar.png?v=1585491649939" alt="">
+  </a>
+  <h1 class="site-title">
+    lnn1988
+  </h1>
+  <p class="site-description">
+    keep healthy 12
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              理解 HTTP 协议
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-03-29
+              </span>
+              <span>
+                5 min read
+              </span>
+              
+                <a href="http://0emlw3.coding-pages.com/tag/coding/" class="post-tag">
+                  # 编程
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h1 id="理解-http-协议">理解 HTTP 协议</h1>
+<h2 id="输入-url-到显示页面的过程">输入 URL 到显示页面的过程</h2>
+<ol>
+<li>DNS 解析：根据域名查 IP
+<ol>
+<li>递归查询</li>
+</ol>
+</li>
+<li>TCP 链接（3 次握手）</li>
+<li>HTTP 请求</li>
+<li>服务器处理请求：接收到TCP报文开始，它会对TCP连接进行处理，对HTTP协议进行解析，并按照报文格式进一步封装成HTTP Request对象，供上层使用。</li>
+<li>代理服务器（nginx）</li>
+<li>接受 HTTP response</li>
+<li>浏览器解析渲染页面</li>
+</ol>
+<h2 id="http-协议特点">HTTP 协议特点</h2>
+<p><strong>客户端、服务端模式</strong><br>
+<strong>简单快速</strong><br>
+只传送 Method 和 URL<br>
+<strong>灵活</strong><br>
+可以传输多种类型的数据，在 Content-type 加以标记</p>
+<p><strong>TCP</strong><br>
+HTTP协议(超文本传输协议HyperText Transfer Protocol)，它是基于TCP协议的应用层传输协议，简单来说就是客户端和服务端进行数据传输的一种规则。</p>
+<p>HTTP协议属于应用层，建立在传输层协议TCP之上。客户端通过与服务器建立TCP连接，之后发送HTTP请求与接收HTTP响应都是通过访问Socket接口来调用TCP协议实现。</p>
+<p><strong>无状态</strong><br>
+HTTP 是一种无状态 (stateless) 协议, HTTP协议本身不会对发送过的请求和相应的通信状态进行持久化处理。这样做的目的是为了保持HTTP协议的简单性，从而能够快速处理大量的事务, 提高效率。</p>
+<p>然而，在许多应用场景中，我们需要保持用户登录的状态或记录用户购物车中的商品。由于HTTP是无状态协议，所以必须引入一些技术来记录管理状态，例如Cookie。</p>
+<h2 id="http-请求">HTTP 请求</h2>
+<ul>
+<li>HTTP请求状态行
+<ul>
+<li>Method</li>
+<li>URL</li>
+<li>HTTP VERSION</li>
+</ul>
+</li>
+<li>HTTP请求头
+<ul>
+<li>COOKIE</li>
+<li>Accept</li>
+<li>Content-Length</li>
+<li>Content-Type</li>
+</ul>
+</li>
+<li>HTTP请求正文(GET 方法没有)</li>
+</ul>
+<h2 id="http-响应">HTTP 响应</h2>
+<ul>
+<li>响应状态行
+<ul>
+<li>HTTP version</li>
+<li>状态码</li>
+<li>状态描述</li>
+</ul>
+</li>
+<li>响应头
+<ul>
+<li>content-encoding: gzip</li>
+<li>content-type: text/html</li>
+</ul>
+</li>
+<li>响应报文</li>
+</ul>
+<h2 id="持久连接">持久连接</h2>
+<p><img src="https://gitee.com/lnn1988/upic1988/raw/master/uPic/H81HHF.jpg" alt="H81HHF" loading="lazy"><br>
+非持久连接在每次请求|响应之后都要断开连接，下次再建立新的TCP连接，这样就造成了大量的通信开销。例如前面提到的往返时间(RTT) 就是在建立TCP连接的过程中的代价。</p>
+<h2 id="get-post-put">GET、POST、PUT</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>幂等</th>
+<th>非幂等</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>改变服务器状态</td>
+<td>PUT</td>
+<td>POST</td>
+</tr>
+<tr>
+<td>不改变服务器状态</td>
+<td>GET</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>GET比POST更不安全，因为参数直接暴露在URL上，所以不能用来传递敏感信息。</li>
+<li>GET参数通过URL传递，POST放在Request body中。</li>
+<li>对于GET方式的请求，浏览器会把http header和data一并发送出去，服务器响应200（返回数据）；</li>
+<li>而对于POST，浏览器先发送header，服务器响应100 continue，浏览器再发送data，服务器响应200 ok（返回数据）。</li>
+</ul>
+<h2 id="http和https">HTTP和HTTPS</h2>
+<p><strong>HTTP的不足</strong></p>
+<ul>
+<li>通信使用明文(不加密),内容可能会被窃听</li>
+<li>不验证通信方的身份,因此有可能遭遇伪装</li>
+<li>无法证明报文的完整性,所以有可能已遭篡改</li>
+</ul>
+<p>HTTP 协议中没有加密机制,但可以通 过和 SSL(Secure Socket Layer, 安全套接层 )或 TLS(Transport Layer Security, 安全层传输协议)的组合使用,加密 HTTP 的通信内容。属于通信加密，即在整个通信线路中加密。</p>
+<figure data-type="image" tabindex="1"><img src="https://gitee.com/lnn1988/upic1988/raw/master/uPic/BpW3M0.jpg" alt="BpW3M0" loading="lazy"></figure>
+<h2 id="https-证书校验过程">HTTPS 证书校验过程</h2>
+<p><strong>非对称加密</strong></p>
+<ul>
+<li>首先接收方生成一对密钥，即私钥和公钥；</li>
+<li>然后，接收方将公钥发送给发送方；</li>
+<li>发送方生成会话秘钥，用收到的公钥对会话秘钥加密，再发送给接收方；</li>
+<li>接收方收到数据后，使用自己的私钥解密得到会话秘钥，双方使用会话秘钥进行数据交换。<br>
+<img src="https://gitee.com/lnn1988/upic1988/raw/master/uPic/uPOwO0.jpg" alt="uPOwO0" loading="lazy"></li>
+</ul>
+<h2 id="http-的-url">HTTP 的 URL</h2>
+<p>eg:<br>
+<code>http://www.aspxfans.com:8080/news/index.asp?boardID=5&amp;ID=24618&amp;page=1#name</code></p>
+<ol>
+<li>协议（http/https）</li>
+<li>域名（或者 IP）</li>
+<li>端口（http80，https443）</li>
+<li>虚拟目录</li>
+<li>文件名</li>
+<li>参数</li>
+</ol>
+<h2 id="restful-风格">RESTful 风格</h2>
+<p><strong>RESTful:</strong> REpresentational State Transfer (表现层状态转移)<br>
+一句话概括 RESTful：<br>
+<strong>URL定位资源，用HTTP动词（GET,POST,DELETE,DETC）描述操作。</strong></p>
+<ol>
+<li>REST描述的是在网络中client和server的一种交互形式</li>
+<li>Server提供的RESTful API中，URL中只使用名词来指定资源，原则上不使用动词</li>
+<li>用HTTP协议里的动词来实现资源的添加，修改，删除等操作</li>
+<li>Server和Client之间传递某资源的一个表现形式，比如用JSON，XML传输文本，或者用JPG，WebP传输图片等</li>
+<li>用 HTTP Status Code传递Server的状态信息</li>
+</ol>
+<h2 id="http-对比-rpc">HTTP 对比 RPC</h2>
+<ol>
+<li>传输协议
+<ol>
+<li>RPC，可以基于TCP协议，也可以基于HTTP协议</li>
+<li>HTTP，基于HTTP协议</li>
+</ol>
+</li>
+<li>传输效率
+<ol>
+<li>RPC，使用自定义的TCP协议，可以让请求报文体积更小，或者使用HTTP2协议，也可以很好的减少报文的体积，提高传输效率</li>
+</ol>
+</li>
+<li>性能消耗，主要在于序列化和反序列化的耗时
+<ol>
+<li>RPC，可以基于thrift实现高效的二进制传输</li>
+<li>HTTP，大部分是通过json来实现的，字节大小和序列化耗时都比thrift要更消耗性能</li>
+</ol>
+</li>
+<li>负载均衡
+<ol>
+<li>RPC，基本都自带了负载均衡策略</li>
+<li>HTTP，需要配置 Nginx，HAProxy来实现</li>
+</ol>
+</li>
+</ol>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E7%90%86%E8%A7%A3-http-%E5%8D%8F%E8%AE%AE">理解 HTTP 协议</a>
+<ul>
+<li><a href="#%E8%BE%93%E5%85%A5-url-%E5%88%B0%E6%98%BE%E7%A4%BA%E9%A1%B5%E9%9D%A2%E7%9A%84%E8%BF%87%E7%A8%8B">输入 URL 到显示页面的过程</a></li>
+<li><a href="#http-%E5%8D%8F%E8%AE%AE%E7%89%B9%E7%82%B9">HTTP 协议特点</a></li>
+<li><a href="#http-%E8%AF%B7%E6%B1%82">HTTP 请求</a></li>
+<li><a href="#http-%E5%93%8D%E5%BA%94">HTTP 响应</a></li>
+<li><a href="#%E6%8C%81%E4%B9%85%E8%BF%9E%E6%8E%A5">持久连接</a></li>
+<li><a href="#get-post-put">GET、POST、PUT</a></li>
+<li><a href="#http%E5%92%8Chttps">HTTP和HTTPS</a></li>
+<li><a href="#https-%E8%AF%81%E4%B9%A6%E6%A0%A1%E9%AA%8C%E8%BF%87%E7%A8%8B">HTTPS 证书校验过程</a></li>
+<li><a href="#http-%E7%9A%84-url">HTTP 的 URL</a></li>
+<li><a href="#restful-%E9%A3%8E%E6%A0%BC">RESTful 风格</a></li>
+<li><a href="#http-%E5%AF%B9%E6%AF%94-rpc">HTTP 对比 RPC</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://0emlw3.coding-pages.com/post/redis-shu-ju-jie-gou/">
+              <h3 class="post-title">
+                redis 数据结构
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://0emlw3.coding-pages.com/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

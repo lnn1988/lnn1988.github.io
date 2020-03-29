@@ -1,0 +1,358 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>redis 数据结构 | lnn1988</title>
+<link rel="shortcut icon" href="http://0emlw3.coding-pages.com/favicon.ico?v=1585491649939">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://0emlw3.coding-pages.com/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="redis 数据结构 | lnn1988 - Atom Feed" href="http://0emlw3.coding-pages.com/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="redis 数据结构
+redis 基本数据结构
+
+string: 字符串
+hash: map
+list: 列表
+set: 集合
+zset: 有序集合
+
+redis 底层数据结构
+SDS(动态字符串)
+SDS 即 simple dynamic..." />
+    <meta name="keywords" content="数据库" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://0emlw3.coding-pages.com">
+  <img class="avatar" src="http://0emlw3.coding-pages.com/images/avatar.png?v=1585491649939" alt="">
+  </a>
+  <h1 class="site-title">
+    lnn1988
+  </h1>
+  <p class="site-description">
+    keep healthy 12
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              redis 数据结构
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-03-29
+              </span>
+              <span>
+                5 min read
+              </span>
+              
+                <a href="http://0emlw3.coding-pages.com/tag/database/" class="post-tag">
+                  # 数据库
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h1 id="redis-数据结构">redis 数据结构</h1>
+<h2 id="redis-基本数据结构">redis 基本数据结构</h2>
+<ul>
+<li>string: 字符串</li>
+<li>hash: map</li>
+<li>list: 列表</li>
+<li>set: 集合</li>
+<li>zset: 有序集合</li>
+</ul>
+<h2 id="redis-底层数据结构">redis 底层数据结构</h2>
+<h3 id="sds动态字符串">SDS(动态字符串)</h3>
+<p>SDS 即 simple dynamic string，称为动态字符串。<br>
+不同于普通的字符串的是:</p>
+<ul>
+<li>预留了 free 空间，不用担心字符串变更造成的内存溢出问题。</li>
+<li>常数时间获取字符串长度<br>
+<strong>free 分配长度</strong><br>
+在小于 1M 时，每次分配 len 长度的 free 空间。<br>
+在大于 1M 时，每次分配 1M 空间。</li>
+</ul>
+<pre><code class="language-C">struct sdshdr{  
+     //记录buf数组中已使用字节的数量  
+     //等于 SDS 保存字符串的长度  
+     int len;  
+     //记录 buf 数组中未使用字节的数量  
+     int free;  
+     //字节数组，用于保存字符串  
+     char buf[];  
+} 
+</code></pre>
+<h3 id="list双向链表">list(双向链表)</h3>
+<ul>
+<li>节点带有前驱和后继指针，访问前驱节点和后继节点的复杂度为 O(1) ，并且对链表的迭代可以在从表头到表尾和从表尾到表头两个方向进行；</li>
+<li>链表带有指向表头和表尾的指针，因此对表头和表尾进行处理的复杂度为 O(1) ；</li>
+<li>链表带有记录节点数量的属性，所以可以在 O(1) 复杂度内返回链表的节点数量（长度）；</li>
+</ul>
+<pre><code class="language-C">typedef  struct listNode{  
+       //前置节点  
+       struct listNode *prev;  
+       //后置节点  
+       struct listNode *next;  
+       //节点的值  
+       void *value;    
+}listNode 
+
+typedef struct list{  
+     //表头节点  
+     listNode *head;  
+     //表尾节点  
+     listNode *tail;  
+     //链表所包含的节点数量  
+     unsigned long len;  
+     //节点值复制函数  
+     void (*free) (void *ptr);  
+     //节点值释放函数  
+     void (*free) (void *ptr);  
+     //节点值对比函数  
+     int (*match) (void *ptr,void *key);  
+}list; 
+</code></pre>
+<h3 id="dict字典">dict(字典)</h3>
+<ul>
+<li>Reids的Hash采用链地址法来处理冲突</li>
+<li>哈希表节点采用单链表结构。</li>
+<li>Redis 字典的底层实现为哈希表，每个字典使用两个哈希表，一般情况下只使用 0 号哈希表，只有在 rehash 进行时，才会同时使用 0 号和 1 号哈希表。</li>
+<li>哈希表使用链地址法来解决键冲突的问题。</li>
+</ul>
+<p><strong>hash冲突</strong><br>
+是指两个 key 或者多个 key 哈希值一样。<br>
+<strong>rehash</strong><br>
+为了让哈希表的负载因子（load factor）维持在一个合理的范围之内， 当哈希表保存的键值对数量太多或者太少时， 程序需要对哈希表的大小进行相应的扩展或者收缩。</p>
+<ul>
+<li>如果执行的是扩展操作， 那么 ht[1] 的大小为第一个大于等于 ht[0].used * 2 的 2^n （2 的 n 次方幂）；</li>
+<li>如果执行的是收缩操作， 那么 ht[1] 的大小为第一个大于等于 ht[0].used 的 2^n 。</li>
+</ul>
+<p>渐进式 rehash，使用 rehashidx 标识已经 rehash 的进度。</p>
+<figure data-type="image" tabindex="1"><img src="https://gitee.com/lnn1988/upic1988/raw/master/uPic/5F0JaI.jpg" alt="5F0JaI" loading="lazy"></figure>
+<pre><code class="language-C">// 字典
+typedef struct dict {  
+    // 类型特定函数  
+    dictType *type;  
+    // 私有数据  
+    void *privdata;  
+    // 哈希表  
+    dictht ht[2];  
+    // rehash 索引  
+    // 当 rehash 不在进行时，值为 -1  
+    int rehashidx; /* rehashing not in progress if rehashidx == -1 */  
+} dict; 
+
+// hash 表
+typedef struct dictht {  
+    // 哈希表数组  
+    dictEntry **table;  
+    // 哈希表大小  
+    unsigned long size;  
+    // 哈希表大小掩码，用于计算索引值  
+    // 总是等于 size - 1  
+    unsigned long sizemask;  
+    // 该哈希表已有节点的数量  
+    unsigned long used;  
+} dictht; 
+
+// hash 表节点
+typedef struct dictEntry {  
+    // 键  
+    void *key;  
+    // 值  
+    union {  
+        void *val;  
+        uint64_t u64;  
+        int64_t s64;  
+    } v;  
+    // 指向下个哈希表节点，形成链表  
+    struct dictEntry *next;  // 单链表结构  
+} dictEntry; 
+
+</code></pre>
+<h3 id="ziplist压缩链表">ziplist(压缩链表)</h3>
+<h3 id="intset整数集合">intset(整数集合)</h3>
+<p>intset 定义了 encoding 方式，length 标识长度，以及 contents 里面保存真实的元素。<br>
+<strong>encoding升级：</strong><br>
+选择元素中最大的数，假设 int16 能存下，就用 int16，否则用 int32，依次类推；<br>
+升级的好处：尽可能节约内存(能用小的就不用大的)。<br>
+不支持降级。</p>
+<pre><code class="language-C">typedef struct intset {  
+    // 编码方式  
+    uint32_t encoding;  
+    // 集合包含的元素数量  
+    uint32_t length;  
+    // 保存元素的数组  
+    int8_t contents[];  
+} intset; 
+</code></pre>
+<h3 id="skiplist跳跃表">skipList(跳跃表)</h3>
+<figure data-type="image" tabindex="2"><img src="https://gitee.com/lnn1988/upic1988/raw/master/uPic/VsOF4e.jpg" alt="VsOF4e" loading="lazy"></figure>
+<ul>
+<li>平衡树的插入和删除操作可能引发子树的调整，逻辑复杂，而skiplist的插入和删除只需要修改相邻节点的指针，操作简单又快速。</li>
+<li>查找一个 key 的时间复杂度时 O(log N)</li>
+<li>每次插入节点，根据 p 计算是否生出下一个节点(p=1/4)</li>
+</ul>
+<pre><code class="language-C">// 跳跃表
+typedef struct zskiplist {  
+    // 表头节点和表尾节点  
+    struct zskiplistNode *header, *tail;  
+    // 表中节点的数量  
+    unsigned long length;  
+    // 表中层数最大的节点的层数  
+    int level;  
+} zskiplist; 
+
+// 跳跃表节点
+typedef struct zskiplistNode {  
+    // 后退指针  
+    struct zskiplistNode *backward;  
+    // 分值  
+    double score;  
+    // 成员对象  
+    robj *obj;  
+    // 层  
+    struct zskiplistLevel {  
+        // 前进指针  
+        struct zskiplistNode *forward;  
+        // 跨度  
+        unsigned int span;  
+    } level[];  
+} zskiplistNode; 
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#redis-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84">redis 数据结构</a>
+<ul>
+<li><a href="#redis-%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84">redis 基本数据结构</a></li>
+<li><a href="#redis-%E5%BA%95%E5%B1%82%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84">redis 底层数据结构</a>
+<ul>
+<li><a href="#sds%E5%8A%A8%E6%80%81%E5%AD%97%E7%AC%A6%E4%B8%B2">SDS(动态字符串)</a></li>
+<li><a href="#list%E5%8F%8C%E5%90%91%E9%93%BE%E8%A1%A8">list(双向链表)</a></li>
+<li><a href="#dict%E5%AD%97%E5%85%B8">dict(字典)</a></li>
+<li><a href="#ziplist%E5%8E%8B%E7%BC%A9%E9%93%BE%E8%A1%A8">ziplist(压缩链表)</a></li>
+<li><a href="#intset%E6%95%B4%E6%95%B0%E9%9B%86%E5%90%88">intset(整数集合)</a></li>
+<li><a href="#skiplist%E8%B7%B3%E8%B7%83%E8%A1%A8">skipList(跳跃表)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://0emlw3.coding-pages.com/post/shu/">
+              <h3 class="post-title">
+                树
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://0emlw3.coding-pages.com/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>
