@@ -1,0 +1,525 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>go &amp;&amp; py | lnn1988</title>
+<link rel="shortcut icon" href="http://0emlw3.coding-pages.com/favicon.ico?v=1585491694138">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://0emlw3.coding-pages.com/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="go &amp;&amp; py | lnn1988 - Atom Feed" href="http://0emlw3.coding-pages.com/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="1.go
+go 数据结构
+https://tiancaiamao.gitbooks.io/go-internals/content/zh/02.2.html
+http://shouce.jb51.net/gopl-zh/ch4/ch4-02..." />
+    <meta name="keywords" content="golang,python,编程" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://0emlw3.coding-pages.com">
+  <img class="avatar" src="http://0emlw3.coding-pages.com/images/avatar.png?v=1585491694138" alt="">
+  </a>
+  <h1 class="site-title">
+    lnn1988
+  </h1>
+  <p class="site-description">
+    keep healthy 12
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              go &amp;&amp; py
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-03-29
+              </span>
+              <span>
+                12 min read
+              </span>
+              
+                <a href="http://0emlw3.coding-pages.com/tag/golang/" class="post-tag">
+                  # golang
+                </a>
+              
+                <a href="http://0emlw3.coding-pages.com/tag/python/" class="post-tag">
+                  # python
+                </a>
+              
+                <a href="http://0emlw3.coding-pages.com/tag/coding/" class="post-tag">
+                  # 编程
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h1 id="1go">1.go</h1>
+<h2 id="go-数据结构">go 数据结构</h2>
+<p>https://tiancaiamao.gitbooks.io/go-internals/content/zh/02.2.html<br>
+http://shouce.jb51.net/gopl-zh/ch4/ch4-02.html</p>
+<p><s>golang 切片和struct的赋值为值拷贝，map为引用拷贝。</s></p>
+<p>在slice中，当len小于cap 的值的时候， 进行append 操作是不会造成内存的重新分配。当 len == cap 时，在append操作的时候就会重新申请空间，go会分配当前空间 * 2 的内存。</p>
+<p>slice和map都不支持==操作符，判断两个slice相等需要自己写循环判断，这种循环判断的方式效率并不会很低；<br>
+map不支持对元素取地址，如果这样做，编辑器会拒绝编译，原因是随着map容量的扩张，底层数据结构可能改变，导致所取得的地址无效。<br>
+对slice的元素取地址编译器是不禁止的，但是我们仍应该避免这样做，因为slice扩张也会导致在新的内存空间重新构造底层数组，而如果操作之前保存的地址值可能会导致无法预料的结果。<br>
+for…range…操作中，如果取了值，而不是通过去下标，像这样：for i,v := range s，其中v并不是s内元素的一个引用，改变v的值，并不能改变s中对应位置的元素。如果要这样做必须通过下标s[i]进行操作。</p>
+<h4 id="slice">Slice</h4>
+<p>cap，len</p>
+<h4 id="map">Map</h4>
+<p>hash 冲突的解决办法：</p>
+<ol>
+<li>开放寻址（假设当前位置被占用，寻找下一个）</li>
+<li>拉链法（链式法则）</li>
+</ol>
+<p>装载因子=键值对个数/桶个数</p>
+<ol>
+<li>对 key 进行 hash，得到 16 位长度的串；分为高八位和低八位</li>
+<li>使用低八位决定 bucket，高八位定位 key</li>
+<li>bucket 存放 tophash 数组，用于快速定位 key 是否存在该 bucket；另外每个 bucket 存放一个数组，分别是连续 8 个 key 和连续 8 个 value，之所以不用 key-value 是为了减少 panding 空间，避免填充消耗空间</li>
+<li>bucket 装满时，使用溢出桶存放数据，优点是减少 rehash 过程</li>
+<li>rehash 过程由两种状态触发
+<ol>
+<li>overLoadFactor 当装载因子&gt;6.5时，进行扩容，桶数目加倍</li>
+<li>tooManyOverflowBuckets 当溢出桶个数太多时，进行 rehash，此时桶个数不变</li>
+</ol>
+</li>
+<li>增量扩容，每次只搬迁不超过 2 个 bucket
+<ol>
+<li>扩容时如何访问，先去 oldbucket 访问，</li>
+</ol>
+</li>
+</ol>
+<h2 id="golang-让协程交替输出">golang 让协程交替输出</h2>
+<p>https://my.oschina.net/90design/blog/1609453</p>
+<h2 id="go-常见信号">go 常见信号</h2>
+<figure data-type="image" tabindex="1"><img src="https://gitee.com/lnn1988/upic1988/raw/master/uPic/%E6%88%AA%E5%B1%8F2020-03-23%E4%B8%8A%E5%8D%8812.12.24.png" alt="截屏2020-03-23上午12.12.24" loading="lazy"></figure>
+<h4 id="监听信号">监听信号</h4>
+<ul>
+<li>golang中对信号的处理主要使用os/signal包中的两个方法：</li>
+<li>notify方法用来监听收到的信号</li>
+<li>stop方法用来取消监听</li>
+</ul>
+<h4 id="优雅退出">优雅退出</h4>
+<pre><code class="language-go">package main
+
+import (
+    &quot;fmt&quot;
+    &quot;os&quot;
+    &quot;os/signal&quot;
+    &quot;syscall&quot;
+    &quot;time&quot;
+)
+
+// 优雅退出go守护进程
+func main()  {
+    //创建监听退出chan
+    c := make(chan os.Signal)
+    //监听指定信号 ctrl+c kill
+    signal.Notify(c, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGUSR1, syscall.SIGUSR2)
+    go func() {
+        for s := range c {
+            switch s {
+            case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
+                fmt.Println(&quot;退出&quot;, s)
+                ExitFunc()
+            case syscall.SIGUSR1:
+                fmt.Println(&quot;usr1&quot;, s)
+            case syscall.SIGUSR2:
+                fmt.Println(&quot;usr2&quot;, s)
+            default:
+                fmt.Println(&quot;other&quot;, s)
+            }
+        }
+    }()
+
+    fmt.Println(&quot;进程启动...&quot;)
+    sum := 0
+    for {
+        sum++
+        fmt.Println(&quot;sum:&quot;, sum)
+        time.Sleep(time.Second)
+    }
+}
+
+func ExitFunc()  {
+    fmt.Println(&quot;开始退出...&quot;)
+    fmt.Println(&quot;执行清理...&quot;)
+    fmt.Println(&quot;结束退出...&quot;)
+    os.Exit(0)
+}
+</code></pre>
+<h2 id="golang-单例模式">golang 单例模式</h2>
+<p>https://www.jianshu.com/p/d2fc1c998fc9</p>
+<ul>
+<li>懒汉模式
+<ul>
+<li>需要时再生成</li>
+</ul>
+</li>
+<li>饿汉模式
+<ul>
+<li>一开始就生成</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-go">type singleton struct {
+}
+
+// private
+var instance *singleton
+
+// public
+func GetInstance() *singleton {
+    if instance == nil {
+        instance = &amp;singleton{}     // not thread safe
+    }
+    return instance
+}
+
+// 双重检查机制
+func GetInstance() *singleton {
+    if instance == nil { 
+        mu.Lock()
+        defer mu.Unlock()
+
+        if instance == nil {
+	            instance = &amp;singleton{}
+        }
+    }
+    return instance
+}
+</code></pre>
+<h2 id="golang-context">golang context</h2>
+<h2 id="理解-go-interface">理解 go interface</h2>
+<h4 id="什么是-interface">什么是 interface</h4>
+<p><strong>当看到一只鸟走起来像鸭子、游泳起来像鸭子、叫起来也像鸭子，那么这只鸟就可以被称为鸭子。</strong></p>
+<p>interface是go语言的一大特性，主要有以下几个特点：</p>
+<ol>
+<li>interface 是方法或行为声明的集合</li>
+<li>interface接口方式实现比较隐性，任何类型的对象实现interface所包含的全部方法，则表明该类型实现了该接口。</li>
+<li>go中允许不带任何方法的interface，这种类型称为empty interface，由于其不带任何方法，所以可以说所有的类型都实现了empty interface。</li>
+</ol>
+<p>interface 可以看做一种规范，统一一个标准。你要调用我，那你就必须实现我的这些方法。我不需要知道你是怎么实现的，但是你一定要实现。</p>
+<p><strong>关于接口，知呼上有一个人是这么说的</strong></p>
+<blockquote>
+<p>接口就是个招牌。<br>
+比如说你今年放假出去杭州旅游，玩了一上午，你也有点饿了，突然看到前面有个店子，上面挂着KFC，然后你就知道今天中饭有着落了。<br>
+KFC就是接口，我们看到了这个接口，就知道这个店会卖炸鸡腿（实现接口）。<br>
+那么为神马我们要去定义一个接口涅，这个店可以直接卖炸鸡腿啊（直接写实现方法），是的，这个店可以直接卖炸鸡腿，但没有挂KFC的招牌，我们就不能直接简单粗暴的冲进去叫服务员给两个炸鸡腿了。<br>
+要么，我们就要进去问，你这里卖不卖炸鸡腿啊，卖不卖汉堡啊，卖不卖圣代啊（这就是反射）。很显然，这样一家家的问实在是非常麻烦（反射性能很差）。<br>
+要么，我们就要记住，中山路108号卖炸鸡，黄山路45号卖炸鸡（硬编码），很显然这样我们要记住的很多很多东西（代码量剧增），而且，如果有新的店卖炸鸡腿，我们也不可能知道（不利于扩展）。</p>
+</blockquote>
+<h4 id="接口组合">接口组合</h4>
+<pre><code class="language-go">type Duck interface {
+    Swim()    // 游泳
+    Feathers() // 羽毛
+}
+
+type QuackDuck interface {
+    Quack()  // 嘎嘎叫
+    Duck     // 嵌入接口
+}
+</code></pre>
+<h4 id="类型断言">类型断言</h4>
+<pre><code class="language-go">func do(v interface{}) {
+    n, ok := v.(int) // 断言 v 变量是否是 int 类型
+    if !ok {
+        // 断言失败处理
+    }
+}
+</code></pre>
+<h2 id="死锁">死锁</h2>
+<p>死锁产生的四个必要条件:</p>
+<p>互斥条件：一个资源每次只能被一个进程使用<br>
+请求与保持条件：一个进程因请求资源而阻塞时，对已获得的资源保持不放。<br>
+不剥夺条件:进程已获得的资源，在末使用完之前，不能强行剥夺。<br>
+循环等待条件:若干进程之间形成一种头尾相接的循环等待资源关系。 这四个条件是死锁的必要条件，只要系统发生死锁，这些条件必然成立，而只要上述条件之一不满足，就不会发生死锁。</p>
+<h1 id="2-py">2. py</h1>
+<h2 id="py-单例模式">py 单例模式</h2>
+<pre><code class="language-py"># 装饰器
+def singleton(cls):
+    _instance = {}
+
+    def inner():
+        if cls not in _instance:
+            _instance[cls] = cls()
+        return _instance[cls]
+    return inner
+    
+@singleton
+class Cls(object):
+    def __init__(self):
+        pass
+</code></pre>
+<pre><code class="language-py"># 使用 new 关键字
+class Single(object):
+    _instance = None
+    def __new__(cls, *args, **kw):
+        if cls._instance is None:
+            cls._instance = object.__new__(cls, *args, **kw)
+        return cls._instance
+    def __init__(self):
+        pass
+
+single1 = Single()
+single2 = Single()
+print(id(single1) == id(single2))
+</code></pre>
+<h2 id="args-kwargs区别">*args **kwargs区别</h2>
+<ul>
+<li>args 是一个无名元组（tuple），表示可变长参数</li>
+<li>kwargs 是一个 dict，表示关键字参数</li>
+</ul>
+<p>使用的时候，args 要在 kwargs 前面</p>
+<h2 id="python-推导式">python 推导式</h2>
+<pre><code class="language-py">s = [str(i) for i in range(0, 10) if i%2 == 0]
+</code></pre>
+<h2 id="python-迭代器">python 迭代器</h2>
+<p>迭代器属于一个临时区，安排一些元素在里面，但只用用的时候才会创建一些临时区，一旦遍历结束则临时区清空，再遍历就失效了。所以说迭代器能够减少内存的开销。</p>
+<p>任何实现了 _<em>next</em>_ 方法 （python2 是 next）的对象都可以称为迭代器。</p>
+<h2 id="python-生成器">python 生成器</h2>
+<p>生成器是一种特殊的迭代器。<br>
+<strong>1. 推导式方法得到生成器</strong></p>
+<pre><code class="language-py"># 将推导式的中括号改为小括号
+g = (x*x for x in range(10))
+</code></pre>
+<p><strong>2. yield 方法得到生成器</strong></p>
+<pre><code class="language-py"># 生成器斐波那契数列
+def fib(n):
+    prev, curr = 0, 1
+    while n&gt; n:
+        n -= 1
+        yield curr
+        prev, curr = curr, curr+prev
+        
+</code></pre>
+<h2 id="python-装饰器">python 装饰器</h2>
+<p>由于函数也是一个对象，而且函数对象可以被赋值给变量，所以，通过变量也能调用该函数。<br>
+decorator可以增强函数的功能，定义起来虽然有点复杂，但使用起来非常灵活和方便。</p>
+<p>装饰器接受一个函数作为参数，对函数进行封装，之后再返回封装之后的参数。</p>
+<pre><code class="language-py">def log(func):
+    def wrapper(*args, **kw):
+        print('call %s():' % func.__name__)
+        return func(*args, **kw)
+    return wrapper
+    
+@log
+def f(a):
+    print(a)
+</code></pre>
+<p>如图所示的装饰器，就可以在调用某个函数之前进行日志输出。</p>
+<h1 id="3-gc">3. GC</h1>
+<h2 id="gc-的方法">GC 的方法</h2>
+<p>垃圾回收(Garbage Collection，简称GC)是编程语言中提供的自动的内存管理机制，自动释放不需要的对象，让出存储器资源，无需程序员手动执行。<br>
+常用的 GC 方法：</p>
+<ol>
+<li>标记-清除
+<ol>
+<li>标记阶段，遍历所有的对象，如果是可达的（reachable），也就是还有对象引用它，那么就标记该对象为可达；</li>
+<li>清除阶段，再次遍历对象，如果发现某个对象没有标记为可达，则就将其回收。</li>
+</ol>
+</li>
+<li>复制收集</li>
+<li>引用计数</li>
+</ol>
+<p>python 使用引用计数法，使用标记-清除解决循环引用；<br>
+golang 使用三色标记法，其实就是标记清除的变体；</p>
+<h2 id="标记-清除法存在的问题">标记-清除法存在的问题</h2>
+<ol>
+<li>STW，stop the world；让程序暂停，程序出现卡顿。</li>
+<li>标记需要扫描整个heap</li>
+<li>清除数据会产生heap碎片</li>
+</ol>
+<h2 id="golang-的三色标记法">golang 的三色标记法</h2>
+<ol>
+<li>首先：程序创建的对象都标记为白色。</li>
+<li>gc开始：扫描所有可到达的对象，标记为灰色</li>
+<li>从灰色对象中找到其引用对象标记为灰色，把灰色对象本身标记为黑色</li>
+<li>监视对象中的内存修改，并持续上一步的操作，直到灰色标记的对象不存在</li>
+<li>此时，gc回收白色对象</li>
+<li>最后，将所有黑色对象变为白色，并重复以上所有过程。</li>
+</ol>
+<p>所谓的 STW(Stop The World)操作，就是把 runtime 所有的线程冻结掉，然后进行扫描和回收。<br>
+<strong>GC 如何减少 STW 的时间呢？</strong><br>
+答案就是<em>清除操作和用户逻辑可以并发</em>。<br>
+标记操作和用户逻辑也是并发的，用户逻辑会时常生成对象或者改变对象的引用，那么标记和用户逻辑如何并发呢？<br>
+Golang为了解决这个问题，引入了写屏障这个机制。<br>
+**写屏障：**该屏障之前的写操作和之后的写操作相比，先被系统其它组件感知。<br>
+通俗的讲：就是在gc跑的过程中，可以监控对象的内存修改，并对对象进行重新标记。(实际上也是超短暂的stw，然后对对象进行标记)<br>
+因此，gc一旦开始，无论是创建对象还是对象的引用改变，都会先变为灰色。</p>
+<h2 id="py-分代回收">PY 分代回收</h2>
+<p>在循环引用对象的回收中，整个应用程序会被暂停，为了减少应用程序暂停的时间，Python 通过“分代回收”(Generational Collection)以空间换时间的方法提高垃圾回收效率。<br>
+分代回收是基于一个思想：<br>
+<strong>在程序中，存在时间越长的内存块，越有可能不是垃圾。</strong></p>
+<p>在 GC 过程中，存在<strong>世代</strong>的概念。<br>
+python gc给对象定义了三种世代(0,1,2),每一个新生对象在generation zero中，如果它在一轮gc扫描中活了下来，那么它将被移至generation one,在那里他将较少的被扫描，如果它又活过了一轮gc,它又将被移至generation two，在那里它被扫描的次数将会更少。<br>
+在某一世代出发 GC 时，比它世代更低的世代也会进行扫描。<br>
+这样，用空间（世代）换时间，提高回收效率。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#1go">1.go</a>
+<ul>
+<li><a href="#go-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84">go 数据结构</a><br>
+*
+<ul>
+<li><a href="#slice">Slice</a></li>
+<li><a href="#map">Map</a></li>
+</ul>
+</li>
+<li><a href="#golang-%E8%AE%A9%E5%8D%8F%E7%A8%8B%E4%BA%A4%E6%9B%BF%E8%BE%93%E5%87%BA">golang 让协程交替输出</a></li>
+<li><a href="#go-%E5%B8%B8%E8%A7%81%E4%BF%A1%E5%8F%B7">go 常见信号</a><br>
+*
+<ul>
+<li><a href="#%E7%9B%91%E5%90%AC%E4%BF%A1%E5%8F%B7">监听信号</a></li>
+<li><a href="#%E4%BC%98%E9%9B%85%E9%80%80%E5%87%BA">优雅退出</a></li>
+</ul>
+</li>
+<li><a href="#golang-%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F">golang 单例模式</a></li>
+<li><a href="#golang-context">golang context</a></li>
+<li><a href="#%E7%90%86%E8%A7%A3-go-interface">理解 go interface</a><br>
+*
+<ul>
+<li><a href="#%E4%BB%80%E4%B9%88%E6%98%AF-interface">什么是 interface</a></li>
+<li><a href="#%E6%8E%A5%E5%8F%A3%E7%BB%84%E5%90%88">接口组合</a></li>
+<li><a href="#%E7%B1%BB%E5%9E%8B%E6%96%AD%E8%A8%80">类型断言</a></li>
+</ul>
+</li>
+<li><a href="#%E6%AD%BB%E9%94%81">死锁</a></li>
+</ul>
+</li>
+<li><a href="#2-py">2. py</a>
+<ul>
+<li><a href="#py-%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F">py 单例模式</a></li>
+<li><a href="#args-kwargs%E5%8C%BA%E5%88%AB">*args **kwargs区别</a></li>
+<li><a href="#python-%E6%8E%A8%E5%AF%BC%E5%BC%8F">python 推导式</a></li>
+<li><a href="#python-%E8%BF%AD%E4%BB%A3%E5%99%A8">python 迭代器</a></li>
+<li><a href="#python-%E7%94%9F%E6%88%90%E5%99%A8">python 生成器</a></li>
+<li><a href="#python-%E8%A3%85%E9%A5%B0%E5%99%A8">python 装饰器</a></li>
+</ul>
+</li>
+<li><a href="#3-gc">3. GC</a>
+<ul>
+<li><a href="#gc-%E7%9A%84%E6%96%B9%E6%B3%95">GC 的方法</a></li>
+<li><a href="#%E6%A0%87%E8%AE%B0-%E6%B8%85%E9%99%A4%E6%B3%95%E5%AD%98%E5%9C%A8%E7%9A%84%E9%97%AE%E9%A2%98">标记-清除法存在的问题</a></li>
+<li><a href="#golang-%E7%9A%84%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95">golang 的三色标记法</a></li>
+<li><a href="#py-%E5%88%86%E4%BB%A3%E5%9B%9E%E6%94%B6">PY 分代回收</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://0emlw3.coding-pages.com/post/li-jie-http-xie-yi/">
+              <h3 class="post-title">
+                理解 HTTP 协议
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://0emlw3.coding-pages.com/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>
