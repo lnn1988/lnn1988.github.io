@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://lnn1988.github.io</id>
     <title>lnn1988</title>
-    <updated>2020-03-29T15:47:16.158Z</updated>
+    <updated>2020-03-29T15:50:38.190Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://lnn1988.github.io"/>
     <link rel="self" href="https://lnn1988.github.io/atom.xml"/>
@@ -10,6 +10,13 @@
     <logo>https://lnn1988.github.io/images/avatar.png</logo>
     <icon>https://lnn1988.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, lnn1988</rights>
+    <entry>
+        <title type="html"><![CDATA[分布式文件系统 HDFS]]></title>
+        <id>https://lnn1988.github.io/post/fen-bu-shi-wen-jian-xi-tong-hdfs/</id>
+        <link href="https://lnn1988.github.io/post/fen-bu-shi-wen-jian-xi-tong-hdfs/">
+        </link>
+        <updated>2020-03-29T15:50:20.000Z</updated>
+    </entry>
     <entry>
         <title type="html"><![CDATA[MapReduce]]></title>
         <id>https://lnn1988.github.io/post/mapreduce/</id>
@@ -72,12 +79,5 @@
         <link href="https://lnn1988.github.io/post/shu-ju-ku-suo-yin/">
         </link>
         <updated>2020-03-29T14:08:55.000Z</updated>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[数据库锁机制]]></title>
-        <id>https://lnn1988.github.io/post/shu-ju-ku-suo-ji-zhi/</id>
-        <link href="https://lnn1988.github.io/post/shu-ju-ku-suo-ji-zhi/">
-        </link>
-        <updated>2020-03-29T14:06:12.000Z</updated>
     </entry>
 </feed>

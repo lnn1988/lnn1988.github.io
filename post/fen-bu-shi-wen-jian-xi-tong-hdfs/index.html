@@ -1,0 +1,300 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>分布式文件系统 HDFS | lnn1988</title>
+<link rel="shortcut icon" href="https://lnn1988.github.io/favicon.ico?v=1585497035528">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://lnn1988.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="分布式文件系统 HDFS | lnn1988 - Atom Feed" href="https://lnn1988.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="分布式文件系统 HDFS
+Hadoop Distributed File System
+HDFS 特性
+HDFS 默认一个块 64Mb，一个大文件会被分为多个块。
+主要实现目标
+
+兼容廉价硬件
+流数据读写
+大数据集
+简单的文件模型
+
+局限性..." />
+    <meta name="keywords" content="大数据" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://lnn1988.github.io">
+  <img class="avatar" src="https://lnn1988.github.io/images/avatar.png?v=1585497035528" alt="">
+  </a>
+  <h1 class="site-title">
+    lnn1988
+  </h1>
+  <p class="site-description">
+    keep healthy 12
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              分布式文件系统 HDFS
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-03-29
+              </span>
+              <span>
+                4 min read
+              </span>
+              
+                <a href="https://lnn1988.github.io/tag/big_data/" class="post-tag">
+                  # 大数据
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h1 id="分布式文件系统-hdfs">分布式文件系统 HDFS</h1>
+<p><em><strong>Hadoop Distributed File System</strong></em></p>
+<h2 id="hdfs-特性">HDFS 特性</h2>
+<p>HDFS 默认一个块 64Mb，一个大文件会被分为多个块。</p>
+<h3 id="主要实现目标">主要实现目标</h3>
+<ul>
+<li>兼容廉价硬件</li>
+<li>流数据读写</li>
+<li>大数据集</li>
+<li>简单的文件模型</li>
+</ul>
+<h3 id="局限性">局限性</h3>
+<ul>
+<li>不支持低延迟数据访问</li>
+<li>无法高效存储小文件</li>
+<li>不适合任意修改文件</li>
+</ul>
+<h2 id="hdfs-主要组件">HDFS 主要组件</h2>
+<ol>
+<li>
+<p>NameNode</p>
+<ul>
+<li>存储元数据（block、datanode 之间的关系）</li>
+<li>元数据存在内存</li>
+</ul>
+</li>
+<li>
+<p>DataNode</p>
+<ul>
+<li>存储文件内容的实际数据</li>
+<li>内容写在磁盘</li>
+</ul>
+</li>
+</ol>
+<h3 id="namenode">NameNode</h3>
+<ul>
+<li>FsImage：维护文件系统树文件的元数据</li>
+<li>EditLog：操作日志文件，记录针对文件的创建、删除、重命名等操作</li>
+</ul>
+<p>在名称节点启动的时候，会将 FsImage 的内容加载到内存中，再执行 EditLog 的各项操作。在内存中成功建立文件系统元数据之后，创建一个新的 FsImage 和一个空的 EditLog，以后再有针对文件的创建、删除等操作，就记录在新创建的 EditLog 之中。</p>
+<p>**Why：**FsImage 一般会比较大，操作日志直接记录在 FsImage 会导致系统运行缓慢，所以记录在 EditLog。</p>
+<p>**EditLog 文件变大怎么办：**使用 SecondaryNameNode 进行备份，第二名称节点定时从主节点拉取 FsImage 和 EditLog，此时名称节点之后的操作写在新的 EditLog.new 中，在第二名称节点将 FsImage 和 EditLog 合并之后，再将新生成的 FsImage 发回给主节点，进行替换即可。</p>
+<h3 id="datanode">DataNode</h3>
+<ul>
+<li>•数据节点是分布式文件系统HDFS的工作节点，负责数据的存储和读取，会根据客户端或者是名称节点的调度来进行数据的存储和检索，并且向名称节点定期发送自己所存储的块的列表</li>
+<li>每个数据节点中的数据会被保存在各自节点的本地Linux文件系统中</li>
+</ul>
+<h2 id="hdfs-存储原理">HDFS 存储原理</h2>
+<h3 id="冗余数据保存">冗余数据保存</h3>
+<ul>
+<li>每个数据块都会冗余保存（默认3）
+<ul>
+<li>加快数据传输（不同应用可以从不同机器取数据、并行记性）</li>
+<li>容易检查数据错误（一旦某个数据块出现错误，会再备份至冗余保存数目）</li>
+<li>保证数据的可靠性</li>
+</ul>
+</li>
+</ul>
+<h3 id="数据存取策略">数据存取策略</h3>
+<ol>
+<li>
+<p>数据存放</p>
+<ul>
+<li>放在上传文件的机器数据节点；如果集群外提交，随机挑选一台磁盘不太满，CPU 不太忙的节点</li>
+<li>放在第一个机架不同的机器上</li>
+<li>放在第一个机架相同的机器上</li>
+</ul>
+</li>
+<li>
+<p>数据读取</p>
+<p>就近选择</p>
+</li>
+</ol>
+<h3 id="数据错误-回复">数据错误、回复</h3>
+<ol>
+<li>
+<p>NameNode 出现错误</p>
+<p>HDFS设置了备份机制，把这些核心文件同步复制到备份服务器SecondaryNameNode上。当名称节点出错时，就可以根据备份服务器SecondaryNameNode中的FsImage和Editlog数据进行恢复。</p>
+</li>
+<li>
+<p>DataNode</p>
+<ul>
+<li>每个数据节点会定期向 NameNode 发送心跳信息</li>
+<li>NameNode 检测不到 DataNode 时，标记其为“宕机”，将其他机器上与此 DataNode 相同的数据再启动冗余复制，进行备份</li>
+<li>DataNode 读取 block 的时候，它会计算 checksum。如果计算后的 checksum，与 block 创建时值不一样，说明该 block 已经损坏。  Client 读取其它 DataNode上的 block 并且标记该块损坏。</li>
+</ul>
+</li>
+</ol>
+<h2 id="hdfs-数据读写过程">HDFS 数据读写过程</h2>
+<h3 id="读数据">读数据</h3>
+<ol>
+<li>打开分布式文件</li>
+<li>寻址请求，从 DataNode 获得 DataNode 的地址</li>
+<li>连接 DataNode，获取数据</li>
+<li>读取另外的 DataNode 直到读取完成</li>
+<li>关闭连接</li>
+</ol>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E5%88%86%E5%B8%83%E5%BC%8F%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F-hdfs">分布式文件系统 HDFS</a>
+<ul>
+<li><a href="#hdfs-%E7%89%B9%E6%80%A7">HDFS 特性</a>
+<ul>
+<li><a href="#%E4%B8%BB%E8%A6%81%E5%AE%9E%E7%8E%B0%E7%9B%AE%E6%A0%87">主要实现目标</a></li>
+<li><a href="#%E5%B1%80%E9%99%90%E6%80%A7">局限性</a></li>
+</ul>
+</li>
+<li><a href="#hdfs-%E4%B8%BB%E8%A6%81%E7%BB%84%E4%BB%B6">HDFS 主要组件</a>
+<ul>
+<li><a href="#namenode">NameNode</a></li>
+<li><a href="#datanode">DataNode</a></li>
+</ul>
+</li>
+<li><a href="#hdfs-%E5%AD%98%E5%82%A8%E5%8E%9F%E7%90%86">HDFS 存储原理</a>
+<ul>
+<li><a href="#%E5%86%97%E4%BD%99%E6%95%B0%E6%8D%AE%E4%BF%9D%E5%AD%98">冗余数据保存</a></li>
+<li><a href="#%E6%95%B0%E6%8D%AE%E5%AD%98%E5%8F%96%E7%AD%96%E7%95%A5">数据存取策略</a></li>
+<li><a href="#%E6%95%B0%E6%8D%AE%E9%94%99%E8%AF%AF-%E5%9B%9E%E5%A4%8D">数据错误、回复</a></li>
+</ul>
+</li>
+<li><a href="#hdfs-%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%86%99%E8%BF%87%E7%A8%8B">HDFS 数据读写过程</a>
+<ul>
+<li><a href="#%E8%AF%BB%E6%95%B0%E6%8D%AE">读数据</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://lnn1988.github.io/post/mapreduce/">
+              <h3 class="post-title">
+                MapReduce
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://lnn1988.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>
